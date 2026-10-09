@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Interview case — project deep dive</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #f4f2ee;
+      --surface: #ffffff;
+      --ink: #14141f;
+      --muted: #5c6070;
+      --line: #e2e0db;
+      --accent: #5b63f6;
+      --accent-soft: #eceeff;
+      --font: "Plus Jakarta Sans", system-ui, sans-serif;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--ink);
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      overflow: hidden;
+      background:
+        radial-gradient(900px 420px at 0% 0%, rgba(91, 99, 246, 0.08), transparent 55%),
+        radial-gradient(700px 380px at 100% 100%, rgba(232, 223, 210, 0.9), transparent 50%),
+        var(--bg);
+    }
+
+    .deck {
+      height: 100%;
+      display: grid;
+      grid-template-rows: 1fr auto;
+    }
+
+    .slides { position: relative; height: 100%; overflow: hidden; }
+
+    .slide {
+      position: absolute;
+      inset: 0;
+      display: none;
+      padding: clamp(28px, 5vw, 64px) clamp(28px, 6vw, 80px);
+      align-content: center;
+      animation: in 280ms ease both;
+    }
+
+    .slide.is-active { display: grid; gap: clamp(14px, 2.2vh, 24px); }
+
+    @keyframes in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .kicker {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+    }
+
+    h1 {
+      font-size: clamp(2rem, 4.4vw, 3.3rem);
+      line-height: 1.1;
+      letter-spacing: -0.04em;
+      font-weight: 800;
+      max-width: 18ch;
+    }
+
+    h2 {
+      font-size: clamp(1.65rem, 3.2vw, 2.5rem);
+      line-height: 1.15;
+      letter-spacing: -0.03em;
+      font-weight: 700;
+      max-width: 24ch;
+    }
+
+    .lede {
+      font-size: clamp(1.05rem, 1.6vw, 1.3rem);
+      line-height: 1.5;
+      color: var(--muted);
+      max-width: 40rem;
+    }
+
+    .story {
+      font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+      line-height: 1.4;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      max-width: 28ch;
+    }
+
+    .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      height: 34px;
+      padding: 0 14px;
+      border-radius: 999px;
+      background: var(--surface);
+      border: 1px solid var(--line);
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .chip.accent {
+      background: var(--accent-soft);
+      border-color: transparent;
+      color: var(--accent);
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+      max-width: 960px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      max-width: 1000px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      padding: 20px 22px;
+    }
+
+    .card h3 {
+      font-size: 1.05rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+      margin-bottom: 8px;
+    }
+
+    .card p, .card li {
+      font-size: 0.98rem;
+      line-height: 1.45;
+      color: var(--muted);
+    }
+
+    .card ul {
+      list-style: none;
+      display: grid;
+      gap: 8px;
+    }
+
+    .card li::before {
+      content: "→ ";
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .big-list {
+      list-style: none;
+      display: grid;
+      gap: 14px;
+      max-width: 720px;
+    }
+
+    .big-list li {
+      display: grid;
+      grid-template-columns: 40px 1fr;
+      gap: 14px;
+      align-items: start;
+      font-size: 1.1rem;
+      line-height: 1.4;
+    }
+
+    .num {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      background: var(--accent);
+      color: #fff;
+      display: grid;
+      place-items: center;
+      font-weight: 700;
+      font-size: 0.95rem;
+      flex-shrink: 0;
+    }
+
+    .before-after {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      max-width: 900px;
+    }
+
+    .before-after .card h3 { color: var(--accent); font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; }
+
+    .footer-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 14px clamp(28px, 6vw, 80px) 18px;
+      border-top: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.72);
+      backdrop-filter: blur(8px);
+    }
+
+    .progress {
+      flex: 1;
+      height: 4px;
+      background: var(--line);
+      border-radius: 999px;
+      overflow: hidden;
+      max-width: 280px;
+    }
+
+    .progress > span {
+      display: block;
+      height: 100%;
+      background: var(--accent);
+      transition: width 200ms ease;
+    }
+
+    .nav { display: flex; align-items: center; gap: 10px; }
+
+    .nav button {
+      height: 40px;
+      padding: 0 16px;
+      border-radius: 12px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font: 600 14px var(--font);
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .nav button:hover { border-color: var(--accent); color: var(--accent); }
+    .nav button:disabled { opacity: 0.35; cursor: default; }
+
+    .page-count {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--muted);
+      min-width: 4.5rem;
+      text-align: center;
+    }
+
+    .hint { font-size: 12px; color: var(--muted); }
+
+    .note {
+      max-width: 40rem;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--accent-soft);
+      color: var(--ink);
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+
+    @media (max-width: 800px) {
+      .grid-2, .grid-3, .before-after { grid-template-columns: 1fr; }
+      h1, h2, .story { max-width: none; }
+    }
+  </style>
+</head>
+<body>
+  <div class="deck">
+    <div class="slides" id="slides">
+
+      <!--
+        CUSTOMIZE: Replace “Boligmappa / home folder” with your real project.
+        Keep this structure: user moment → problem in one sentence → your role → hard parts → what you did → result for the user.
+      -->
+
+      <section class="slide is-active" data-title="The moment">
+        <p class="kicker">Start with the user</p>
+        <p class="story">
+          Someone just bought a home.
+          They open Boligmappa to find their documents…
+          and they can’t get in.
+        </p>
+        <p class="lede">
+          Or worse: they still see the previous owner’s folder — or nothing at all.
+          That’s the case.
+        </p>
+      </section>
+
+      <section class="slide" data-title="One sentence">
+        <p class="kicker">The problem, in one sentence</p>
+        <h1>After a home changes hands, the right person often couldn’t access their digital home folder.</h1>
+        <p class="lede">
+          Boligmappa is Norway’s “digital binder” for a property — papers, history, access for the owner.
+          When ownership changes in real life, our product often lagged behind.
+        </p>
+      </section>
+
+      <section class="slide" data-title="Why it hurts">
+        <p class="kicker">Why users care</p>
+        <h2>This isn’t a data bug. It’s a blocked life moment.</h2>
+        <div class="grid-3">
+          <div class="card">
+            <h3>I need my papers</h3>
+            <p>Insurance, renovation, selling again — people expect the folder to follow the home.</p>
+          </div>
+          <div class="card">
+            <h3>I feel locked out</h3>
+            <p>“I own this place — why doesn’t the app know?” Trust drops fast.</p>
+          </div>
+          <div class="card">
+            <h3>Support becomes the product</h3>
+            <p>Users call. Agents dig in databases. Slow, stressful, expensive.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-title="Before / after">
+        <p class="kicker">Picture it</p>
+        <h2>What “broken” looked like</h2>
+        <div class="before-after">
+          <div class="card">
+            <h3>Before</h3>
+            <p>
+              Home is sold → new owner logs in → folder missing, wrong, or still tied to the seller.
+              Nobody has a clear “source of truth” for who should have access now.
+            </p>
+          </div>
+          <div class="card">
+            <h3>Goal</h3>
+            <p>
+              Home is sold → system updates from official ownership data →
+              new owner gets in, old owner loses access, support isn’t the workaround.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-title="My role">
+        <p class="kicker">My part</p>
+        <h2>I led getting us from “manual fixes” to a reliable product path</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>I owned</h3>
+            <ul>
+              <li>Framing the user problem with product &amp; support</li>
+              <li>Deciding what we automate vs leave for humans</li>
+              <li>Cutting the work into safe releases</li>
+              <li>Keeping remote people aligned on trade-offs</li>
+            </ul>
+          </div>
+          <div class="card">
+            <h3>I did not only “manage”</h3>
+            <ul>
+              <li>Went deep on real tickets and edge cases</li>
+              <li>Worked the ownership data end-to-end</li>
+              <li>Said no to “just overwrite everything”</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-title="Why hard">
+        <p class="kicker">Why this was hard</p>
+        <h2>Three reasons it wasn’t a simple sync</h2>
+        <ul class="big-list">
+          <li>
+            <span class="num">1</span>
+            <span><strong style="color:var(--ink)">Official data isn’t always complete or timely</strong> — so blind auto-updates can lock the wrong people out.</span>
+          </li>
+          <li>
+            <span class="num">2</span>
+            <span><strong style="color:var(--ink)">Homes aren’t always “one owner, one house”</strong> — shares, companies, co-owners make access messy.</span>
+          </li>
+          <li>
+            <span class="num">3</span>
+            <span><strong style="color:var(--ink)">Mistakes hurt more than delays</strong> — removing the right owner by accident is worse than being a day late.</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="slide" data-title="What we did">
+        <p class="kicker">What we did</p>
+        <h2>We made access updates safe enough to ship</h2>
+        <div class="grid-2">
+          <div class="card">
+            <h3>1. See the mismatch clearly</h3>
+            <p>First: show “who the official register says” vs “who has access today” — so we stop guessing.</p>
+          </div>
+          <div class="card">
+            <h3>2. Automate only the safe cases</h3>
+            <p>Clear person → clear home → update. Ambiguous cases get flagged, not silently broken.</p>
+          </div>
+          <div class="card">
+            <h3>3. Ship in slices</h3>
+            <p>Start with the common “sold to a person” path users hit most — then expand.</p>
+          </div>
+          <div class="card">
+            <h3>4. Measure with real pain</h3>
+            <p>Success = fewer locked-out buyers and less support archaeology — not “% of rows synced”.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="slide" data-title="Result">
+        <p class="kicker">Result for the user</p>
+        <h2>Buying a home stopped meaning “fight the app”</h2>
+        <div class="grid-3">
+          <div class="card">
+            <h3>User</h3>
+            <p>New owners more often land in the right folder without calling support.</p>
+          </div>
+          <div class="card">
+            <h3>Support</h3>
+            <p>Faster answers: we can see the mismatch instead of hunting blindly.</p>
+          </div>
+          <div class="card">
+            <h3>Product</h3>
+            <p>A clear rule: only auto-fix when we’re confident — trust over coverage.</p>
+          </div>
+        </div>
+        <p class="note">
+          Add 1–2 real numbers if you have them (e.g. fewer access tickets, faster resolution).
+          If not, keep it qualitative — interviewers care that you know the user impact.
+        </p>
+      </section>
+
+      <section class="slide" data-title="Why Carla">
+        <p class="kicker">Why this is relevant here</p>
+        <h2>Same shape of problem as a car marketplace</h2>
+        <ul class="big-list">
+          <li>
+            <span class="num">1</span>
+            <span>Users trust you with a big life purchase — wrong data feels personal.</span>
+          </li>
+          <li>
+            <span class="num">2</span>
+            <span>You depend on messy outside data, but the product still has to feel simple.</span>
+          </li>
+          <li>
+            <span class="num">3</span>
+            <span>Leading means choosing what <em>not</em> to automate so you don’t break trust.</span>
+          </li>
+        </ul>
+      </section>
+
+      <section class="slide" data-title="Questions">
+        <p class="kicker">Discussion</p>
+        <p class="story">That’s the case: keep the digital home folder tied to the real owner when life changes.</p>
+        <p class="lede">
+          Happy to go deeper on a messy edge case, a trade-off, or what I’d do differently.
+        </p>
+        <div class="meta">
+          <span class="chip accent">No code in this part</span>
+          <span class="chip">Ask me anything</span>
+        </div>
+      </section>
+
+    </div>
+
+    <footer class="footer-bar">
+      <div class="progress" aria-hidden="true"><span id="bar"></span></div>
+      <p class="hint">← → navigate · F fullscreen</p>
+      <div class="nav">
+        <button type="button" id="prev" disabled>Back</button>
+        <span class="page-count" id="count">1 / 1</span>
+        <button type="button" id="next">Next</button>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    const slides = [...document.querySelectorAll(".slide")];
+    const prev = document.getElementById("prev");
+    const next = document.getElementById("next");
+    const count = document.getElementById("count");
+    const bar = document.getElementById("bar");
+    let i = 0;
+
+    function show(n) {
+      i = Math.max(0, Math.min(slides.length - 1, n));
+      slides.forEach((s, idx) => s.classList.toggle("is-active", idx === i));
+      prev.disabled = i === 0;
+      next.disabled = i === slides.length - 1;
+      count.textContent = `${i + 1} / ${slides.length}`;
+      bar.style.width = `${((i + 1) / slides.length) * 100}%`;
+      document.title = `Interview case — ${slides[i].dataset.title}`;
+    }
+
+    prev.addEventListener("click", () => show(i - 1));
+    next.addEventListener("click", () => show(i + 1));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "ArrowRight" || e.key === " ") { e.preventDefault(); show(i + 1); }
+      if (e.key === "ArrowLeft") { e.preventDefault(); show(i - 1); }
+      if (e.key === "f" || e.key === "F") {
+        if (!document.fullscreenElement) document.documentElement.requestFullscreen?.();
+        else document.exitFullscreen?.();
+      }
+    });
+
+    show(0);
+  </script>
+</body>
+</html>
