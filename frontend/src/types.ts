@@ -1,3 +1,4 @@
+/** Dataset bounds and status counts from `/api/meta`. */
 export interface MetaResponse {
   dateMin: string;
   dateMax: string;
@@ -6,6 +7,7 @@ export interface MetaResponse {
   currencyAssumption: string;
 }
 
+/** Price and mileage stats for one make/model in the selected period. */
 export interface ModelPriceAggregate {
   make: string;
   model: string;
@@ -18,11 +20,13 @@ export interface ModelPriceAggregate {
   monthlyMedians: number[];
 }
 
+/** How many sales a make has in the current price response. */
 export interface MakeCount {
   make: string;
   saleCount: number;
 }
 
+/** Overall totals for the filtered sales set from `/api/prices`. */
 export interface PriceSummary {
   from: string;
   to: string;
@@ -35,12 +39,14 @@ export interface PriceSummary {
   overallMaxPrice: number;
 }
 
+/** Full `/api/prices` response used by the UI. */
 export interface PricesResponse {
   summary: PriceSummary;
   makes: MakeCount[];
   models: ModelPriceAggregate[];
 }
 
+/** Columns the models table can sort by. */
 export type SortKey =
   | "name"
   | "saleCount"

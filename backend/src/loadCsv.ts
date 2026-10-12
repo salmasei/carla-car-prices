@@ -6,7 +6,10 @@ import type { SaleRecord } from "./types.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-/** CSV timestamps look like `2023-01-01 13.23.19` (dots instead of colons). */
+/**
+ * Parses a CSV order_date string into a Date.
+ * Timestamps look like `2023-01-01 13.23.19` (dots instead of colons).
+ */
 export function parseOrderDate(raw: string): Date {
   const normalized = raw.trim().replace(/^(\d{4}-\d{2}-\d{2}) (\d{2})\.(\d{2})\.(\d{2})$/, "$1T$2:$3:$4");
   const date = new Date(normalized);
@@ -16,6 +19,7 @@ export function parseOrderDate(raw: string): Date {
   return date;
 }
 
+/** Formats a Date as `YYYY-MM-DD` for comparisons and API query params. */
 export function toDateKey(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -23,6 +27,7 @@ export function toDateKey(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+/** Streams and parses the car sales CSV into SaleRecord objects. */
 export async function loadSales(csvPath = defaultCsvPath()): Promise<SaleRecord[]> {
   const records: SaleRecord[] = [];
 
@@ -54,10 +59,12 @@ export async function loadSales(csvPath = defaultCsvPath()): Promise<SaleRecord[
   return records;
 }
 
+/** Absolute path to the default `data/car_sales.csv` file. */
 export function defaultCsvPath(): string {
   return path.resolve(__dirname, "../../data/car_sales.csv");
 }
 
+/** Returns the earliest and latest order dates in the loaded sales dataset. */
 export function datasetBounds(sales: SaleRecord[]): { dateMin: string; dateMax: string } {
   let min = sales[0]?.orderDate;
   let max = sales[0]?.orderDate;

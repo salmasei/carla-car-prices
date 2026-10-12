@@ -15,6 +15,10 @@ const staticDir = process.env.STATIC_DIR
 
 let sales: SaleRecord[] = [];
 
+/**
+ * Parses the `status` query param into a list of order statuses.
+ * Empty / missing → default COMPLETED; `"all"` → no status filter.
+ */
 function parseStatuses(raw: unknown): string[] {
   if (typeof raw !== "string" || raw.trim() === "") return DEFAULT_STATUSES;
   if (raw.trim().toLowerCase() === "all") return [];
@@ -24,6 +28,10 @@ function parseStatuses(raw: unknown): string[] {
     .filter(Boolean);
 }
 
+/**
+ * Loads the CSV, starts the Express API (`/api/health`, `/api/meta`, `/api/prices`),
+ * and serves the built frontend as static files.
+ */
 async function main() {
   sales = await loadSales();
   const bounds = datasetBounds(sales);

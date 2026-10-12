@@ -3,6 +3,7 @@ import type { MakeCount, ModelPriceAggregate, PricesResponse, SaleRecord } from 
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+/** Median of a sorted number array; returns 0 when empty. */
 function median(sorted: number[]): number {
   if (sorted.length === 0) return 0;
   const mid = Math.floor(sorted.length / 2);
@@ -12,17 +13,23 @@ function median(sorted: number[]): number {
   return sorted[mid]!;
 }
 
+/** Rounded arithmetic mean; returns 0 when empty. */
 function average(values: number[]): number {
   if (values.length === 0) return 0;
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
 }
 
+/** Throws if `value` is not a `YYYY-MM-DD` date string. */
 function assertDate(value: string, label: string): void {
   if (!DATE_RE.test(value)) {
     throw new Error(`Invalid ${label}: ${value}. Expected YYYY-MM-DD.`);
   }
 }
 
+/**
+ * Builds a 12-element array of median prices by calendar month
+ * (index 0 = January … 11 = December; 0 means no sales that month).
+ */
 function monthlyMedians(group: SaleRecord[]): number[] {
   const buckets: number[][] = Array.from({ length: 12 }, () => []);
   for (const sale of group) {
@@ -34,6 +41,10 @@ function monthlyMedians(group: SaleRecord[]): number[] {
   });
 }
 
+/**
+ * Filters sales by date range and order status, then aggregates make counts
+ * and per-model price/mileage statistics for the `/api/prices` response.
+ */
 export function aggregatePrices(
   sales: SaleRecord[],
   from: string,

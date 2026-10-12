@@ -10,6 +10,7 @@ import {
 } from "./format";
 import type { MetaResponse, ModelPriceAggregate, PricesResponse, SortKey } from "./types";
 
+/** Sort direction: ascending (1) or descending (-1). */
 type SortDir = 1 | -1;
 
 const MONTH_LABELS = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
@@ -23,15 +24,21 @@ const HEADERS: { label: string; key: SortKey; align: "left" | "right" }[] = [
   { label: "Avg mileage", key: "avgMileageKilometers", align: "right" },
 ];
 
+/** Display name for a model row, e.g. `Tesla Model 3`. */
 function modelName(row: ModelPriceAggregate): string {
   return `${row.make} ${row.model}`;
 }
 
+/** Value used when sorting the models table by the given column. */
 function sortValue(row: ModelPriceAggregate, key: SortKey): string | number {
   if (key === "name") return modelName(row);
   return row[key];
 }
 
+/**
+ * Main price-history UI: date filters, make chips, KPIs, sortable model table,
+ * and a detail panel with monthly median prices.
+ */
 export default function App() {
   const [meta, setMeta] = useState<MetaResponse | null>(null);
   const [from, setFrom] = useState("");
@@ -188,6 +195,7 @@ export default function App() {
 
   const detailIsSelected = Boolean(selectedModel && detailModel && modelName(detailModel) === selectedModel);
 
+  /** Toggles sort direction for the active column, or switches to a new column. */
   function toggleSort(key: SortKey) {
     if (key === sortKey) {
       setSortDir((dir) => (dir === 1 ? -1 : 1));
@@ -197,12 +205,14 @@ export default function App() {
     setSortDir(key === "name" ? 1 : -1);
   }
 
+  /** Adds or removes a make from the active make filter. */
   function toggleMake(make: string) {
     setSelectedMakes((current) =>
       current.includes(make) ? current.filter((item) => item !== make) : [...current, make],
     );
   }
 
+  /** Clears search text, make filters, and the selected model detail. */
   function clearFilters() {
     setQuery("");
     setSelectedMakes([]);
@@ -472,6 +482,7 @@ export default function App() {
   );
 }
 
+/** Bar chart of median prices by month (Jan–Dec) for the selected model. */
 function MonthChart({ months }: { months: number[] }) {
   const present = months.filter((value) => value > 0);
   const max = Math.max(...present, 1);
